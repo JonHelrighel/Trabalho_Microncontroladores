@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#define PPR 1       // 1 pulso por revolução (ajustado ao seu disco)
-#define FILTER_N 5  // Número de amostras na média móvel
+#define PPR 1       // 1 pulso por revoluï¿½ï¿½o (ajustado ao seu disco)
+#define FILTER_N 5  // Nï¿½mero de amostras na mï¿½dia mï¿½vel
 
 // --- UART 9600 8N1 ---
 void UART_init(void) {
@@ -18,3 +18,4 @@ void UART_init(void) {
 	UCSR0B = (1<<RXEN0)|(1<<TXEN0);
 	UCSR0C = (1<<UCSZ01)|(1<<UCSZ00);
 }
+//teste pra ver se esta funcionando pro daniel
