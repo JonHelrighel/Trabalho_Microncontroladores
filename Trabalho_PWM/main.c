@@ -1,30 +1,20 @@
 #define F_CPU 16000000UL
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdint.h>
 
-int main(void) {
-	DDRD |= (1 << PD6); // D6 (OC0A) como saï¿½da
-	DDRB |= (1 << PB3); // D11 (OC2A) como saï¿½da (nï¿½o usada agora)
+#define PPR 1       // 1 pulso por revolução (ajustado ao seu disco)
+#define FILTER_N 5  // Número de amostras na média móvel
 
-	// Configura Timer0 - Fast PWM no OC0A
-	TCCR0A = (1 << COM0A1) | (1 << WGM01) | (1 << WGM00);
-	TCCR0B = (1 << CS01) | (1 << CS00); // Prescaler 64
-
-	// Configura Timer2 (nï¿½o usado ativamente)
-	TCCR2A = (1 << COM2A1) | (1 << WGM21) | (1 << WGM20);
-	TCCR2B = (1 << CS22);
-
-	OCR0A = 0; // teste pra ver aaa
-	OCR2A = 0;
-
-	// PWM sobe de 0 atï¿½ 255 e fica lï¿½
-	for (int i = 0; i <= 255; i++) {
-		OCR0A = i;
-		_delay_ms(10);
-	}
-
-	// Mantï¿½m PWM no mï¿½ximo para sempre
-	while (1) {
-		// Nada aqui, OCR0A jï¿½ estï¿½ em 255
-	}
+// --- UART 9600 8N1 ---
+void UART_init(void) {
+	uint16_t ubrr = 103;           // 16MHz / 16 / 9600 - 1
+	UBRR0H = ubrr >> 8;
+	UBRR0L = ubrr;
+	UCSR0B = (1<<RXEN0)|(1<<TXEN0);
+	UCSR0C = (1<<UCSZ01)|(1<<UCSZ00);
 }
