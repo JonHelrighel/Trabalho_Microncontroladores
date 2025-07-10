@@ -44,8 +44,17 @@ void TIMER1_init(void) {
     OCR1A   = 62500 - 1;            // 16MHz/256 = 62500 ticks → 1s
     TIMSK1 |= (1<<OCIE1A);          // IRQ Compare A
 }
-volatile uint16_t contagem_pulsos  = 0; //Eu sou bilingue seu palhaço, respeita seu pai, mas vou traduzir
+volatile uint16_t contagem_pulsos  = 0; 
 volatile uint8_t  sinal_rpm        = 0;
 volatile uint16_t pulsos_capturados = 0;
 
+ISR(INT0_vect) {
+    contagem_pulsos++;
+}
+
+ISR(TIMER1_COMPA_vect) {
+    pulsos_capturados = contagem_pulsos;
+    contagem_pulsos   = 0;
+    sinal_rpm         = 1;
+}
 
