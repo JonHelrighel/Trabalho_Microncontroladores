@@ -32,5 +32,11 @@ char UART_recv_char(void) {
     while (!(UCSR0A & (1<<RXC0)));
     return UDR0;
 }
+void PWM_init(void) {
+    DDRD  |= (1<<PD6);  // OC0A (D6) como saída
+    TCCR0A = (1<<WGM00)|(1<<WGM01)|(1<<COM0A1); // Fast PWM, não inversor
+    TCCR0B = (1<<CS01)|(1<<CS00); // Prescaler 64
+    OCR0A  = 0;  // Duty inicial 0%
+}                             // 0% duty cycle
 
 
