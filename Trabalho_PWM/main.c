@@ -64,7 +64,6 @@ void SENSOR_init(void) {
     EIMSK |=  (1<<INT0);
     sei();                           // habilita interrupções
 }
-
 int main(void) {
     UART_init();        
     PWM_init();
@@ -82,8 +81,26 @@ int main(void) {
     UART_send_string("Digite 0-100% e ENTER:\r\n");
 
     while (1) {
+
+         if (UCSR0A & (1<<RXC0)) {
+            char c = UART_recv_char();
+            if (c >= '0' && c <= '9' && indice_num < sizeof(numero)-1) {
+                numero[indice_num++] = c;
+            }
+            else if ((c=='\r' || c=='\n') && indice_num > 0) {
+                numero[indice_num] = '\0';
+                int ciclo = atoi(numero);
+                if (ciclo < 0) ciclo = 0;
+                if (ciclo > 100) ciclo = 100;
+                OCR0A = (uint8_t)((ciclo * 255UL) / 100);
+                indice_num = 0;
+                memset(numero, 0, sizeof(numero));
+                UART_send_string("OK\r\n");
+            }
+        }
     }
 }
+
 
 
     
