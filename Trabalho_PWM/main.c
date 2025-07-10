@@ -65,3 +65,27 @@ void SENSOR_init(void) {
     sei();                           // habilita interrupções
 }
 
+int main(void) {
+    UART_init();        
+    PWM_init();
+    TIMER1_init();
+    SENSOR_init();
+
+    // Buffer para média móvel de RPM
+    uint16_t buffer_rpm[FILTER_N] = {0};
+    uint8_t  indice_buffer = 0;
+
+    char linha[32];
+    char numero[4];
+    uint8_t indice_num = 0;
+
+    UART_send_string("Digite 0-100% e ENTER:\r\n");
+
+    while (1) {
+    }
+}
+
+
+    
+
+    
