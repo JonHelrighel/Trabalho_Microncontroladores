@@ -39,4 +39,9 @@ void PWM_init(void) {
     OCR0A  = 0;  // Duty inicial 0%
 }                             // 0% duty cycle
 
+void TIMER1_init(void) {
+    TCCR1B  = (1<<WGM12)|(1<<CS12); // CTC, prescaler 256
+    OCR1A   = 62500 - 1;            // 16MHz/256 = 62500 ticks → 1s
+    TIMSK1 |= (1<<OCIE1A);          // IRQ Compare A
+}
 
