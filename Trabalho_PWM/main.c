@@ -57,4 +57,11 @@ ISR(TIMER1_COMPA_vect) {
     contagem_pulsos   = 0;
     sinal_rpm         = 1;
 }
+void SENSOR_init(void) {
+    DDRD  &= ~(1<<PD2);
+    PORTD |=  (1<<PD2);              // pull‑up
+    EICRA |=  (1<<ISC01)|(1<<ISC00); // INT0 = borda de subida
+    EIMSK |=  (1<<INT0);
+    sei();                           // habilita interrupções
+}
 
