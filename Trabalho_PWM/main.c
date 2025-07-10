@@ -44,8 +44,8 @@ void TIMER1_init(void) {
     OCR1A   = 62500 - 1;            // 16MHz/256 = 62500 ticks → 1s
     TIMSK1 |= (1<<OCIE1A);          // IRQ Compare A
 }
-volatile uint16_t pulse_count     = 0; //Pq voce ta definindo tag em ingles doidao???????????
-volatile uint8_t  rpm_flag        = 0;
-volatile uint16_t pulses_captured = 0;
+volatile uint16_t contagem_pulsos  = 0; //Eu sou bilingue seu palhaço, respeita seu pai, mas vou traduzir
+volatile uint8_t  sinal_rpm        = 0;
+volatile uint16_t pulsos_capturados = 0;
 
 
