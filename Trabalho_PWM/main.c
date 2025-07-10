@@ -44,4 +44,8 @@ void TIMER1_init(void) {
     OCR1A   = 62500 - 1;            // 16MHz/256 = 62500 ticks → 1s
     TIMSK1 |= (1<<OCIE1A);          // IRQ Compare A
 }
+volatile uint16_t pulse_count     = 0;
+volatile uint8_t  rpm_flag        = 0;
+volatile uint16_t pulses_captured = 0;
+
 
