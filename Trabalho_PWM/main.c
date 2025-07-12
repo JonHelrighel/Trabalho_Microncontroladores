@@ -95,9 +95,17 @@ int main(void) {
                 OCR0A = (uint8_t)((ciclo * 255UL) / 100);
                 indice_num = 0;
                 memset(numero, 0, sizeof(numero));
-                UART_send_string("OK\r\n");
+                UART_send_string("OK\r\n");   //retorna mensagem no monitor serial dizendo "ok"
             }
         }
+         if (sinal_rpm) {
+            sinal_rpm = 0;
+            // Calcula média móvel
+            uint32_t soma = 0;
+            for (uint8_t i = 0; i < FILTER_N; i++) {
+                soma += buffer_rpm[i];
+            }
+
     }
 }
 
