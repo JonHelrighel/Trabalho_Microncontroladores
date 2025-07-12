@@ -105,6 +105,13 @@ int main(void) {
             for (uint8_t i = 0; i < FILTER_N; i++) {
                 soma += buffer_rpm[i];
             }
+               uint16_t rpm_filtrado = soma / FILTER_N;
+                 snprintf(linha, sizeof(linha), "RPM: %u\r\n", rpm_filtrado);
+            UART_send_string(linha);
+        }
+    }
+}
+
 
     }
 }
