@@ -96,69 +96,72 @@ int main(void) {
 
 	while (1) {
 		// Leitura via UART (duty cycle)
-if (UCSR0A & (1<<RXC0)) {
-	char c = UART_recv_char();
+		if (UCSR0A & (1<<RXC0)) {
+			char c = UART_recv_char();
 
-	// Controle via letras A–K (ou a–k)
-	if ((c >= 'A' && c <= 'K') || (c >= 'a' && c <= 'k')) {
-		uint8_t duty_table[] = {0, 26, 51, 77, 102, 128, 153, 179, 204, 230, 255};
-		uint8_t index = (c >= 'a') ? c - 'a' : c - 'A';
-		if (index < sizeof(duty_table)) {
-			duty_desejado = index * 10;
-			snprintf(linha, sizeof(linha), "PWM ajustado para %u%%\r\n", index * 10);
-			UART_send_string(linha);
+			// Controle via letras A–K (ou a–k)
+			if ((c >= 'A' && c <= 'K') || (c >= 'a' && c <= 'k')) {
+				uint8_t duty_table[] = {0, 26, 51, 77, 102, 128, 153, 179, 204, 230, 255};
+				uint8_t index = (c >= 'a') ? c - 'a' : c - 'A';
+				if (index < sizeof(duty_table)) {
+					duty_desejado = index * 10;
+					snprintf(linha, sizeof(linha), "PWM ajustado para %u%%\r\n", index * 10);
+					UART_send_string(linha);
+				}
+			}
+			// Controle via número (ex: 75 + ENTER)
+			else if (c >= '0' && c <= '9' && indice_num < sizeof(numero)-1) {
+				numero[indice_num++] = c;
+			}
+			else if ((c == '\r' || c == '\n') && indice_num > 0) {
+				numero[indice_num] = '\0';
+				int ciclo = atoi(numero);
+				if (ciclo < 0) ciclo = 0;
+				if (ciclo > 100) ciclo = 100;
+				duty_desejado = ciclo;
+				indice_num = 0;
+				memset(numero, 0, sizeof(numero));
+				snprintf(linha, sizeof(linha), "PWM ajustado para %d%%\r\n", ciclo);
+				UART_send_string(linha);
+			}
 		}
-	}
-	// Controle via número (ex: 75 + ENTER)
-	else if (c >= '0' && c <= '9' && indice_num < sizeof(numero)-1) {
-		numero[indice_num++] = c;
-	}
-	else if ((c == '\r' || c == '\n') && indice_num > 0) {
-		numero[indice_num] = '\0';
-		int ciclo = atoi(numero);
-		if (ciclo < 0) ciclo = 0;
-		if (ciclo > 100) ciclo = 100;
-		duty_desejado = ciclo;
-		indice_num = 0;
-		memset(numero, 0, sizeof(numero));
-		snprintf(linha, sizeof(linha), "PWM ajustado para %d%%\r\n", ciclo);
-		UART_send_string(linha);
-	}
-}
+
 		// Processa RPM a cada 1 segundo
 		if (sinal_rpm) {
 			sinal_rpm = 0;
 
-			// Adiciona nova leitura convertida em RPM ao buffer
 			uint16_t rpm_atual = pulsos_capturados * (60 / PPR);
 			buffer_rpm[indice_buffer++] = rpm_atual;
 			if (indice_buffer >= FILTER_N) indice_buffer = 0;
 
-			// Média móvel
 			uint32_t soma = 0;
 			for (uint8_t i = 0; i < FILTER_N; i++) {
 				soma += buffer_rpm[i];
 			}
 			uint16_t rpm_filtrado = soma / FILTER_N;
 
-			// Envia via UART
+			// Envia RPM e PWM juntos via UART
 			snprintf(linha, sizeof(linha), "RPM: %u\r\n", rpm_filtrado);
 			UART_send_string(linha);
+
+			snprintf(linha, sizeof(linha), "PWM: %u%%\r\n", duty_atual);
+			UART_send_string(linha);
 		}
+
 		// Controle de rampa PWM (1% a cada 200ms)
-if (tempo_rampa_ms >= 200) {
-	tempo_rampa_ms = 0;
+		if (tempo_rampa_ms >= 200) {
+			tempo_rampa_ms = 0;
 
-	if (duty_atual < duty_desejado) {
-		duty_atual++;
-	} else if (duty_atual > duty_desejado) {
-		duty_atual--;
-	}
-	OCR0A = (duty_atual * 255UL) / 100;
-}
-_delay_ms(10);  // base de tempo
-tempo_rampa_ms += 10;
+			if (duty_atual < duty_desejado) {
+				duty_atual++;
+			} else if (duty_atual > duty_desejado) {
+				duty_atual--;
+			}
+			OCR0A = (duty_atual * 255UL) / 100;
+		}
 
+		_delay_ms(10);
+		tempo_rampa_ms += 10;
 	}
 }
 
