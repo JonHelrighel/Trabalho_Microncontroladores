@@ -80,6 +80,10 @@ int main(void) {
 	PWM_init();
 	TIMER1_init();
 	SENSOR_init();
+	
+	uint8_t duty_atual = 0;
+	uint8_t duty_desejado = 0;
+	uint16_t tempo_rampa_ms = 0;
 
 	uint16_t buffer_rpm[FILTER_N] = {0};
 	uint8_t  indice_buffer = 0;
@@ -100,7 +104,7 @@ if (UCSR0A & (1<<RXC0)) {
 		uint8_t duty_table[] = {0, 26, 51, 77, 102, 128, 153, 179, 204, 230, 255};
 		uint8_t index = (c >= 'a') ? c - 'a' : c - 'A';
 		if (index < sizeof(duty_table)) {
-			OCR0A = duty_table[index];
+			duty_desejado = index * 10;
 			snprintf(linha, sizeof(linha), "PWM ajustado para %u%%\r\n", index * 10);
 			UART_send_string(linha);
 		}
@@ -114,14 +118,13 @@ if (UCSR0A & (1<<RXC0)) {
 		int ciclo = atoi(numero);
 		if (ciclo < 0) ciclo = 0;
 		if (ciclo > 100) ciclo = 100;
-		OCR0A = (uint8_t)((ciclo * 255UL) / 100);
+		duty_desejado = ciclo;
 		indice_num = 0;
 		memset(numero, 0, sizeof(numero));
 		snprintf(linha, sizeof(linha), "PWM ajustado para %d%%\r\n", ciclo);
 		UART_send_string(linha);
 	}
 }
-
 		// Processa RPM a cada 1 segundo
 		if (sinal_rpm) {
 			sinal_rpm = 0;
@@ -142,6 +145,20 @@ if (UCSR0A & (1<<RXC0)) {
 			snprintf(linha, sizeof(linha), "RPM: %u\r\n", rpm_filtrado);
 			UART_send_string(linha);
 		}
+		// Controle de rampa PWM (1% a cada 200ms)
+if (tempo_rampa_ms >= 200) {
+	tempo_rampa_ms = 0;
+
+	if (duty_atual < duty_desejado) {
+		duty_atual++;
+	} else if (duty_atual > duty_desejado) {
+		duty_atual--;
+	}
+	OCR0A = (duty_atual * 255UL) / 100;
+}
+_delay_ms(10);  // base de tempo
+tempo_rampa_ms += 10;
+
 	}
 }
 
